@@ -1,0 +1,5 @@
+imię:Kylian nazwisko:Mbappe mecze:14 gole:19 asysty:4 stan_zdrowia:Kontuzja
+imię:Jude nazwisko:Bellingham mecze:15 gole:3 asysty:2 stan_zdrowia:Zdrowy
+imię:Gonzalo nazwisko:Garcia mecze:5 gole:3 asysty:1 stan_zdrowia:Zdrowy
+imię:Rodrygo nazwisko:Goes mecze:9 gole:3 asysty:2 stan_zdrowia:Zdrowy
+imię:Trent nazwisko:Alexander-Arnold mecze:3 gole:0 asysty:2 stan_zdrowia:Kontuzja

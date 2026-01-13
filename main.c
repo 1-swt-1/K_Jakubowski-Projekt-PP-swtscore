@@ -44,7 +44,7 @@ int main(int l_arg, char *lista_arg[]) { // l_arg -> ile argumentow zostało wpr
             case 1: wyswietl(kadra); break;
             case 2: dodaj(&kadra); break;
             case 3: usun(&kadra); break;
-            //case 4: wyszukaj(kadra); break;
+            case 4: wyszukaj(kadra); break;
             case 5: zapisz(kadra, plik_bazy); break;
             case 0: zwolnij(kadra); return 0;
             default: break;

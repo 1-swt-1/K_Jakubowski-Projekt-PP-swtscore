@@ -55,6 +55,7 @@ void pobierz_tekst(char *cel, int max_len) {
     }
 }
 
+
 //pozostałe funkcje
 Zawodnik *stworz(char *im, char *naz, int m, int g, int a, char *st) {
     Zawodnik *new = (Zawodnik *)malloc(sizeof(Zawodnik));//"(Zawodnik *)" symboliozuje strukture zawodnik
@@ -168,12 +169,62 @@ void wczytaj(Zawodnik **head, char *nazwa_pliku) {
     fclose(f);
 }
 
+//funkcja sortująca bąbelkowo po liczbie goli (malejąco)
 void sortuj_gole(Zawodnik *head) {
+    if (head == NULL) return; //jeśli lista jest pusta, nie ma czego sortować
+    int zamiana; //flaga informująca czy w danej turze coś przestawiliśmy
+    Zawodnik *p; //wskaźnik do przeglądania listy
+    Zawodnik *last = NULL; //wskaźnik ograniczający zakres sortowania
 
+    do { //pętla sortowania bąbelkowego
+        zamiana = 0; //na początku tury zakładamy że wszystko jest w porządku
+        p = head; //zaczynamy od początku listy
+        while (p->next != last) { //idziemy do przodu aż do miejsca już posortowanego
+            if (p->gole < p->next->gole) { //jeśli obecny ma mniej goli niż następny (zła kolejność)
+                char t_txt[51]; //bufor na tekst do zamiany miejscami
+                int t_num; //bufor na liczby do zamiany miejscami
+                strcpy(t_txt, p->imie); strcpy(p->imie, p->next->imie); strcpy(p->next->imie, t_txt); //zamiana imion
+                strcpy(t_txt, p->nazwisko); strcpy(p->nazwisko, p->next->nazwisko); strcpy(p->next->nazwisko, t_txt); //zamiana nazwisk
+                strcpy(t_txt, p->stan); strcpy(p->stan, p->next->stan); strcpy(p->next->stan, t_txt); //zamiana stanu zdrowia
+                t_num = p->mecze; p->mecze = p->next->mecze; p->next->mecze = t_num; //zamiana meczów
+                t_num = p->gole; p->gole = p->next->gole; p->next->gole = t_num; //zamiana goli
+                t_num = p->asysty; p->asysty = p->next->asysty; p->next->asysty = t_num; //zamiana asyst
+                zamiana = 1; //odnotowanie że dokonaliśmy poprawki w tej turze
+            }
+            p = p->next;//przejście do następnej pary zawodników
+        }
+
+        last = p; //ostatni sprawdzony element jest już na swoim miejscu
+    } while (zamiana); //powtarzaj póki w liście dojdzie do jakichkolwiek zmian
 }
 
+//funkcja sortująca alfabetycznie po nazwisku
 void sortuj_nazwisko(Zawodnik *head) {
+    if (head == NULL) return; //jeśli brak zawodników, wyjdź
+    int zamiana; //flaga kontrolna bąbelkowania
+    Zawodnik *p; //wskaźnik pomocniczy
+    Zawodnik *last = NULL; //bariera końca sortowania
 
+    do { //pętla główna
+        zamiana = 0; //reset flagi zamiany
+        p = head; //start od początku
+        while (p->next != last) { //przeglądanie par elementów
+            if (strcmp(p->nazwisko, p->next->nazwisko) > 0) { //jeśli nazwisko jest "większe" (dalej w alfabecie) niż następne
+                char t_txt[51]; //bufor tekstowy
+                int t_num; //bufor liczbowy
+                strcpy(t_txt, p->imie); strcpy(p->imie, p->next->imie); strcpy(p->next->imie, t_txt); //zamiana imion
+                strcpy(t_txt, p->nazwisko); strcpy(p->nazwisko, p->next->nazwisko); strcpy(p->next->nazwisko, t_txt); //zamiana nazwisk
+                strcpy(t_txt, p->stan); strcpy(p->stan, p->next->stan); strcpy(p->next->stan, t_txt); //zamiana stanu
+                t_num = p->mecze; p->mecze = p->next->mecze; p->next->mecze = t_num; //zamiana meczów
+                t_num = p->gole; p->gole = p->next->gole; p->next->gole = t_num; //zamiana goli
+                t_num = p->asysty; p->asysty = p->next->asysty; p->next->asysty = t_num; //zamiana asyst
+                zamiana = 1; //potwierdzenie dokonania zmiany
+            }
+
+            p = p->next; //kolejna para
+        }
+        last = p; //zawężenie obszaru sortowania
+    } while (zamiana); //pętla kręci się dopóki lista nie będzie idealnie poukładana
 }
 
 void wyswietl(Zawodnik *head) { //funkcja drukująca całą kadrę na ekranie
@@ -217,9 +268,96 @@ void zwolnij(Zawodnik *head) {
     }
 }
 
-void wyszukaj(Zawodnik *head) {
+//funkcja do szukania konkretnych danych w kadrze
+void wyszukaj(Zawodnik *head) { 
+    wyczysc();
+    printf("|===Wyszukiwanie Zawodnika===|\n");
+    printf("|1. Po nazwisku(Edycja stanu)|\n");
+    printf("|2. Po golach strzelonych    |\n");
+    printf("|0. Wyjdz                    |\n");
+    printf("|============================|\n");
+    printf("Wybieram: ");
 
+    int opcja = pobierz_int(0, 2);
+    if (opcja == 0) return; //jeśli wybrano 0, wróć do menu głównego
+
+    //szukanie po nazwisku
+    if (opcja == 1) { //jeśli szukamy po nazwisku
+        wyczysc();
+        char cel[51]; //zmienna na szukane słowo
+        printf("Podaj nazwisko: ");
+        pobierz_tekst(cel, 51); //pobranie nazwiska do zmiennej cel
+
+        Zawodnik *p = head; //start szukania od początku listy
+        int znaleziono = 0; //flaga czy w ogóle kogoś trafiliśmy
+
+        while (p != NULL) { //przeglądanie całej listy
+            if (strcmp(p->nazwisko, cel) == 0) { //jeśli nazwisko z listy zgadza się z wpisanym
+                znaleziono = 1; //zaznaczenie że mamy trafienie
+                wyczysc();
+                printf("|==Znaleziono=============================|\n");
+                printf("|Imię: %s\n", p->imie); //wyświetlenie imienia
+                printf("|Nazwisko: %s\n", p->nazwisko); //wyświetlenie nazwiska
+                printf("|Mecze: %d\n", p->mecze); //wyświetlenie meczów
+                printf("|Gole: %d\n", p->gole); //wyświetlenie goli
+                printf("|Asysty: %d\n", p->asysty); //wyświetlenie asyst
+                printf("|Stan Zdrowia: %s\n", p->stan); //wyświetlenie stanu zdrowia
+                printf("|=========================================|\n");
+                printf("|==OPCJE:=================================|\n");
+                printf("|1. Edytuj stan zdrowia                   |\n");
+                printf("|0. Wyjdź                                 |\n");
+                printf("|=========================================|\n");
+                printf("|Wybieram: ");
+                
+                int sub = pobierz_int(0, 1);
+                
+                if (sub == 1) { //jeśli chcemy edytować stan zdrowia
+                    wyczysc();
+                    printf("Podaj nowy stan zdrowia: ");
+                    pobierz_tekst(p->stan, 51); //nadpisanie starego stanu nowym tekstem
+                    wyczysc();
+                    printf("Zaktualizowano stan zdrowia!\n");
+                    printf("Nacisnij ENTER aby wrocic...");
+                    getchar();
+                }
+                return;//wyjście z funkcji szukania po znalezieniu i obsłużeniu osoby
+            }
+            p = p->next;//przejście do kolejnej pozycji z listy
+        }
+        
+        if (!znaleziono) { //jeśli pętla się skończyła a "znaleziono" nadal wynosi 0
+            printf("\nNie znaleziono zawodnika o nazwisku: %s\n", cel);
+            printf("Nacisnij ENTER...");
+            getchar(); //pauza
+        }
+    }
+    
+    //szukanie po golach
+    else if (opcja == 2) { //jeśli szukamy wszystkich z konkretną liczbą bramek
+        int szukane_gole; //zmienna na liczbę goli do filtra
+        wyczysc();
+        printf("Podaj liczbe goli: ");
+        szukane_gole = pobierz_int(0, 100);
+
+        Zawodnik *p = head; //start od początku listy
+        int znaleziono = 0; //flaga trafień
+        wyczysc();
+        printf("=== Zawodnicy z liczbą goli: %d ===\n", szukane_gole);
+        while (p != NULL) { //sprawdzanie każdego zawodnika po kolei
+
+            if (p->gole == szukane_gole) { //jeśli gole zawodnika są równe szukanym
+                printf("Imię: %s  Nazwisko: %s  Mecze: %d  Gole: %d  Asysty: %d  Stan: %s\n", p->imie, p->nazwisko, p->mecze, p->gole, p->asysty, p->stan); //wypisanie danych osoby
+                znaleziono = 1; //odnotowanie trafienia
+            }
+
+            p = p->next; //skok do następnego zawodnika
+        }
+
+        if (!znaleziono) { //jeśli nikt w całej kadrze nie ma tylu goli
+            printf("Brak zawodników spełniających kryterium.\n");
+        }
+        
+        printf("\nNaciśnij ENTER aby kontynuować...");
+        getchar();
+    } //koniec sekcji szukania po golach
 }
-
-
-

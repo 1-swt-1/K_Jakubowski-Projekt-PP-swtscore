@@ -26,7 +26,7 @@ void dodaj(Zawodnik **head);//head to bedzie adres pierwszego elementu z listy
 void usun(Zawodnik **head);
 
 void zapisz(Zawodnik *head, char *nazwa_pliku);
-void wczytaj(Zawodnik *head, char *nazwa_pliku);
+void wczytaj(Zawodnik **head, char *nazwa_pliku);
 
 void wyswietl(Zawodnik *head);
 void wyszukaj(Zawodnik *head);
